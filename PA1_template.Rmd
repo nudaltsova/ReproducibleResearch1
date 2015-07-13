@@ -1,0 +1,203 @@
+---
+title: "Reproducible Research Assignment 1 Report"
+output: html_document
+---
+
+*author: "Natalia Udaltsova"*
+*date: "Tuesday, June 23, 2015"*
+
+## Introduction
+
+It is now possible to collect a large amount of data about personal movement using activity monitoring devices such as a Fitbit, Nike Fuelband, or Jawbone Up. These type of devices are part of the “quantified self” movement – a group of enthusiasts who take measurements about themselves regularly to improve their health, to find patterns in their behavior, or because they are tech geeks. But these data remain under-utilized both because the raw data are hard to obtain and there is a lack of statistical methods and software for processing and interpreting the data.
+
+This assignment makes use of data from a personal activity monitoring device. This device collects data at 5 minute intervals through out the day. The data consists of two months of data from an anonymous individual collected during the months of October and November, 2012 and include the number of steps taken in 5 minute intervals each day.
+
+### Data
+
+The data for this assignment can be downloaded from the course web site: [Activity monitoring data, 52K](https://d396qusza40orc.cloudfront.net/repdata%2Fdata%2Factivity.zip)
+
+The dataset is stored in a comma-separated-value (CSV) file and there are a total of 17,568 observations in this dataset.
+
+
+
+The variables included in this dataset are:
+
+- steps: Number of steps taking in a 5-minute interval (missing values are coded as NA)
+
+- date: The date on which the measurement was taken in MM/DD/YYYY format
+
+- interval: Identifier for the 5-minute interval in which measurement was taken
+
+## Assignment
+
+The assignment is described and implemented in multiple parts below
+
+### I. Loading and preprocessing the data
+
+Here we assume that the input data file **activity.csv** is unzipped and place to the same folder with this document.
+Data is loaded using the read.csv function and looks like:
+
+```{r, echo=FALSE}
+# activity monitoring data - data frame after initial load
+# take something in the middle to show NaNs
+
+amd = read.csv("activity.csv");
+knitr::kable(amd[285:293,], align="c", digits = 2, caption = "Raw Data: Sample Data Rows")
+
+```
+
+After the loading, the *date* and *interval* column are formatted to present days, hours and munutes like YYYY-MM-DD hh:mm and a new column, rownumber (within a day), is assded for proper sorting. Now it liiks like :
+
+```{r, echo=FALSE}
+amd$date <- as.Date(amd$date, "%m/%d/%Y")
+
+#add rownum for proper sorting
+amd$rownumber <- ave(amd$steps, amd$date, FUN = seq_along)
+
+#this method found online - as couldnt find a native one
+str_rev <- function(s){
+  paste(rev(substring(s,1:nchar(s),1:nchar(s))),collapse="") 
+}
+
+#this method is mine and ugly
+
+amd$interval <- sapply(amd$interval ,function(x){y <- str_rev(substr(paste(str_rev(x) , "000", sep = ""), 1, 4))
+                                                 paste(substr(y, 1, 2), substr(y,3,5), sep = ":")})
+
+knitr::kable(amd[285:293,], align="c", digits = 2, caption = "Formated data: Sample Data Rows")
+
+
+```
+
+### II. What is mean total number of steps taken per day? 
+
+
+For this part of the assignment, we do ignore the missing values in the dataset (na.rm=TRUE)
+
+```{r, echo=FALSE}
+amdAggrByDay <- aggregate(amd$steps, by=list(Category=amd$date), FUN=sum, na.rm=TRUE)
+names(amdAggrByDay) <- c("date", "total")
+
+
+```
+
+1. Total number of steps taken per day results in a table of `r dim(amdAggrByDay)[1]` rows. The head of the table is:
+
+```{r, echo=FALSE}
+mn <- sprintf("%.1f",mean(amdAggrByDay$total))
+md <- sprintf("%.1f",median(amdAggrByDay$total))
+knitr::kable(amdAggrByDay[1:5,], align="c", digits = 2, caption = "Sample Rows for Totals per Date")
+
+```
+
+2. The histogram of the total number of steps taken each day (10 breaks): 
+
+```{r, echo=FALSE}
+hist(amdAggrByDay$total, xlab="Total per day ", breaks =  10)
+
+```
+
+3. The mean and median of the total number of steps taken per day are **`r mn`** and **`r md`** correspondingly
+
+
+###  III. What is the average daily activity pattern? 
+
+
+1. The average number of steps taken, averaged across all days, per 5-minute interval are shown on the plot below:
+
+```{r, echo=FALSE}
+#amdAggrByInterval <- aggregate(amd$steps, by=list(Category=amd$rownumber), FUN=mean, na.rm=TRUE)
+amdAggrByInterval <- aggregate(amd$steps, by=list(Category=amd$interval), FUN=mean, na.rm=TRUE)
+amdAggrByInterval$rownumber <- ave(amdAggrByInterval$Category, FUN = seq_along)
+names(amdAggrByInterval) <- c("time", "mean","interval")
+
+mx <- sprintf("%.1f",max(amdAggrByInterval$mean))
+mi <- which(amdAggrByInterval$mean == mx)
+
+plot(x=amdAggrByInterval$interval,y=amdAggrByInterval$mean,type="l",xlab='Interval, HH:mm', ylab="average", xaxt='n')
+axis(1, at=amdAggrByInterval$interval, labels=c(amdAggrByInterval$time))
+
+```
+
+2. The `r mi`th interval, on average across all the days in the dataset, contains the maximum number of steps which is **`r mx`**
+
+
+
+###  IV. Imputing missing values
+```{r, echo=FALSE}
+
+admMissCount <- aggregate(amd$steps, by=list(Category=amd$date), FUN=function(x){sum(is.na(x))})
+names(admMissCount) <- c("date", "count")
+
+```
+
+1. The total no of missing in the dataset is `r sum(is.na(amd$steps))` Data gaps are distributd per days, i.e. there are `r dim(admMissCount)[1]` days totally missed from the experiment, those days are:
+
+```{r, echo=FALSE}
+knitr::kable(admMissCount[admMissCount$count >0,], align="c", digits = 2, caption = "Dates with Missing Steps")
+
+```
+
+2. The assignment here is to devise a strategy for filling in all of the missing values in the dataset. If we dont want to do anything sophisticated here, the method of mean substitution is the candidate no 1. In general, the result of such a replacement can be biased, but if we assume that the daily pattern of steps/interval is repeatable, such an approach might make sense.
+
+```{r, echo=FALSE}
+#copy
+amdNaReplaced <- amd
+#replace NA
+amdNaReplaced[,1] <-apply(amd, 1, function(x) 
+                                    if(is.na(x[1])) 
+                                      amdAggrByInterval$mean[amdAggrByInterval$interval==as.numeric(x[4])] 
+                                    else 
+                                      as.numeric(x[1]))
+
+```
+
+3. The new dataset, with NA replaced by averame per interval now look like:
+
+```{r, echo=FALSE}
+knitr::kable(amdNaReplaced[285:293,], align="c", digits = 2, caption = "Raw Data with NA replaced: Sample Data Rows")
+
+```
+
+4. The histogram of the total number of steps taken each day (10 breaks): 
+
+```{r, echo=FALSE}
+amdAggrByDayNA <- aggregate(amdNaReplaced$steps, by=list(Category=amdNaReplaced$date), FUN=sum, na.rm=TRUE)
+names(amdAggrByDayNA) <- c("date", "total")
+mnNA <- sprintf("%.1f",mean(amdAggrByDayNA$total))
+mdNA <- sprintf("%.1f",median(amdAggrByDayNA$total))
+hist(amdAggrByDayNA$total, xlab="Total per day ", breaks =  10)
+
+```
+
+The mean and median of the total number of steps with NA replaced taken per day are `r mnNA` and `r mdNA` correspondingly. If we compare this histrogram to the one section II we can see that low frequency area at the very beginning at the plot is now gone and the distribution is a bit more normal.
+
+
+###  V. Weekdays and Weekend Patterns
+
+The plot below the blue line shows the weekend daily pattern and the green one - weekdays.
+
+```{r, echo=FALSE}
+
+amdAggrByDayNA <- aggregate(amdNaReplaced$steps, by=list(Category=amdNaReplaced$date), FUN=sum, na.rm=TRUE)
+names(amdAggrByDayNA) <- c("date", "total")
+mnNA <- mean(amdAggrByDayNA$total)
+mdNA <- median(amdAggrByDayNA$total)
+
+amdNaReplaced$weekend <- (weekdays(amdNaReplaced$date) %in% c('Saturday','Sunday'))
+stepsWE <- amdNaReplaced[amdNaReplaced$weekend==TRUE,]
+stepsWD <- amdNaReplaced[amdNaReplaced$weekend==FALSE,]
+
+amdAggrByIntervalWE <- aggregate(stepsWE$steps, by=list(Category=stepsWE$rownumber), FUN=mean)
+amdAggrByIntervalWD <- aggregate(stepsWD$steps, by=list(Category=stepsWD$rownumber), FUN=mean)
+names(amdAggrByIntervalWE) <- c("interval", "mean")
+names(amdAggrByIntervalWD) <- c("interval", "mean")
+
+plot(x=amdAggrByIntervalWE$interval,y=amdAggrByIntervalWD$mean,type="l",col = 'green', xlab='Interval, HH:mm', ylab="average", xaxt='n')
+lines(x=amdAggrByIntervalWD$interval,y=amdAggrByIntervalWE$mean,col = 'blue')
+axis(1, at=amdAggrByIntervalWE$interval, labels=c(amdAggrByInterval$time))
+
+```
+
+At the choosen sample we can see that the most steps activity starts and finishes later on weeknds and more activities are performed over the weekends, and this is quite understandable .
+
