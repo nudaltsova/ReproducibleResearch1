@@ -43,34 +43,22 @@ Data is loaded using the read.csv function and looks like:
 # take something in the middle to show NaNs
 
 amd = read.csv("activity.csv");
-```
-
-```
-## Warning in file(file, "rt"): cannot open file 'activity.csv': No such file
-## or directory
-```
-
-```
-## Error in file(file, "rt"): cannot open the connection
-```
-
-```r
 knitr::kable(amd[285:293,], align="c", digits = 2, caption = "Raw Data: Sample Data Rows")
 ```
 
 
 
-|    | steps |    date    | interval | rownumber |
-|:---|:-----:|:----------:|:--------:|:---------:|
-|285 |  NA   | 2012-10-01 |  23:40   |    285    |
-|286 |  NA   | 2012-10-01 |  23:45   |    286    |
-|287 |  NA   | 2012-10-01 |  23:50   |    287    |
-|288 |  NA   | 2012-10-01 |  23:55   |    288    |
-|289 |   0   | 2012-10-02 |  00:00   |     1     |
-|290 |   0   | 2012-10-02 |  00:05   |     2     |
-|291 |   0   | 2012-10-02 |  00:10   |     3     |
-|292 |   0   | 2012-10-02 |  00:15   |     4     |
-|293 |   0   | 2012-10-02 |  00:20   |     5     |
+|    | steps |   date    | interval |
+|:---|:-----:|:---------:|:--------:|
+|285 |  NA   | 10/1/2012 |   2340   |
+|286 |  NA   | 10/1/2012 |   2345   |
+|287 |  NA   | 10/1/2012 |   2350   |
+|288 |  NA   | 10/1/2012 |   2355   |
+|289 |   0   | 10/2/2012 |    0     |
+|290 |   0   | 10/2/2012 |    5     |
+|291 |   0   | 10/2/2012 |    10    |
+|292 |   0   | 10/2/2012 |    15    |
+|293 |   0   | 10/2/2012 |    20    |
 
 After the loading, the *date* and *interval* column are formatted to present days, hours and munutes like YYYY-MM-DD hh:mm and a new column, rownumber (within a day), is assded for proper sorting. Now it liiks like :
 
@@ -99,15 +87,15 @@ knitr::kable(amd[285:293,], align="c", digits = 2, caption = "Formated data: Sam
 
 |    | steps |    date    | interval | rownumber |
 |:---|:-----:|:----------:|:--------:|:---------:|
-|285 |  NA   | 2012-10-01 |  3::40   |    285    |
-|286 |  NA   | 2012-10-01 |  3::45   |    286    |
-|287 |  NA   | 2012-10-01 |  3::50   |    287    |
-|288 |  NA   | 2012-10-01 |  3::55   |    288    |
-|289 |   0   | 2012-10-02 |  0::00   |     1     |
-|290 |   0   | 2012-10-02 |  0::05   |     2     |
-|291 |   0   | 2012-10-02 |  0::10   |     3     |
-|292 |   0   | 2012-10-02 |  0::15   |     4     |
-|293 |   0   | 2012-10-02 |  0::20   |     5     |
+|285 |  NA   | 2012-10-01 |  23:40   |    285    |
+|286 |  NA   | 2012-10-01 |  23:45   |    286    |
+|287 |  NA   | 2012-10-01 |  23:50   |    287    |
+|288 |  NA   | 2012-10-01 |  23:55   |    288    |
+|289 |   0   | 2012-10-02 |  00:00   |     1     |
+|290 |   0   | 2012-10-02 |  00:05   |     2     |
+|291 |   0   | 2012-10-02 |  00:10   |     3     |
+|292 |   0   | 2012-10-02 |  00:15   |     4     |
+|293 |   0   | 2012-10-02 |  00:20   |     5     |
 
 ### II. What is mean total number of steps taken per day? 
 
@@ -181,7 +169,7 @@ mx <- max(amdAggrByInterval$mean)
 mi <- which(amdAggrByInterval$mean == mx)
 ```
 
-2. The **105** th interval, on average across all the days in the dataset, contains the maximum number of steps which is **140.6**
+2. The **104** th interval, on average across all the days in the dataset, contains the maximum number of steps which is **206.2**
 
 
 
@@ -226,11 +214,6 @@ amdNaReplaced[,1] <-apply(amd, 1, function(x)
                                       as.numeric(x[1]))
 ```
 
-```
-## Warning in `[<-.data.frame`(`*tmp*`, , 1, value = list(1, 2,
-## 20.6289308176101, : provided 17568 variables to replace 1 variables
-```
-
 3. The new dataset, with NA replaced by averame per interval now look like:
 
 
@@ -242,15 +225,15 @@ knitr::kable(amdNaReplaced[285:293,], align="c", digits = 2, caption = "Raw Data
 
 |    | steps |    date    | interval | rownumber |
 |:---|:-----:|:----------:|:--------:|:---------:|
-|285 |   1   | 2012-10-01 |  3::40   |    285    |
-|286 |   1   | 2012-10-01 |  3::45   |    286    |
-|287 |   1   | 2012-10-01 |  3::50   |    287    |
-|288 |   1   | 2012-10-01 |  3::55   |    288    |
-|289 |   1   | 2012-10-02 |  0::00   |     1     |
-|290 |   1   | 2012-10-02 |  0::05   |     2     |
-|291 |   1   | 2012-10-02 |  0::10   |     3     |
-|292 |   1   | 2012-10-02 |  0::15   |     4     |
-|293 |   1   | 2012-10-02 |  0::20   |     5     |
+|285 | 3.30  | 2012-10-01 |  23:40   |    285    |
+|286 | 0.64  | 2012-10-01 |  23:45   |    286    |
+|287 | 0.23  | 2012-10-01 |  23:50   |    287    |
+|288 | 1.08  | 2012-10-01 |  23:55   |    288    |
+|289 | 0.00  | 2012-10-02 |  00:00   |     1     |
+|290 | 0.00  | 2012-10-02 |  00:05   |     2     |
+|291 | 0.00  | 2012-10-02 |  00:10   |     3     |
+|292 | 0.00  | 2012-10-02 |  00:15   |     4     |
+|293 | 0.00  | 2012-10-02 |  00:20   |     5     |
 
 4. The histogram of the total number of steps taken each day (10 breaks): 
 
@@ -269,7 +252,7 @@ mnNA <- sprintf("%.1f",mean(amdAggrByDayNA$total))
 mdNA <- sprintf("%.1f",median(amdAggrByDayNA$total))
 ```
 
-The mean and median of the total number of steps with NA replaced taken per day are **288.0** and **288.0** correspondingly. If we compare this histrogram to the one in section II we can see that low frequency area at the very beginning at the plot is now gone and the distribution is a bit more normal.
+The mean and median of the total number of steps with NA replaced taken per day are **10766.2** and **10766.2** correspondingly. If we compare this histrogram to the one in section II we can see that low frequency area at the very beginning at the plot is now gone and the distribution is a bit more normal.
 
 
 ###  V. Weekdays and Weekend Patterns
@@ -301,15 +284,8 @@ yval2 <- amdAggrByWeekDay[amdAggrByWeekDay$weekday=="Weekend",]$mean
 
 plot(x=xval,y=yval1,type="l",col = 'green', xlab='Interval, HH:mm', ylab="average", xaxt='n')
 lines(x=xval,y=yval2,col = 'blue')
-```
-
-![plot of chunk unnamed-chunk-16](figure/unnamed-chunk-16-1.png) 
-
-```r
 axis(1, at=xval, labels=c(amdAggrByInterval$time))
 ```
 
-```
-## Error in axis(1, at = xval, labels = c(amdAggrByInterval$time)): 'at' and 'labels' lengths differ, 288 != 120
-```
+![plot of chunk unnamed-chunk-16](figure/unnamed-chunk-16-1.png) 
 
