@@ -4,7 +4,7 @@ output: html_document
 ---
 
 *author: "Natalia Udaltsova"*
-*date: "Tuesday, June 23, 2015"*
+*date: "Tuesday, July 14, 2015"*
 
 ## Introduction
 
@@ -43,22 +43,34 @@ Data is loaded using the read.csv function and looks like:
 # take something in the middle to show NaNs
 
 amd = read.csv("activity.csv");
+```
+
+```
+## Warning in file(file, "rt"): cannot open file 'activity.csv': No such file
+## or directory
+```
+
+```
+## Error in file(file, "rt"): cannot open the connection
+```
+
+```r
 knitr::kable(amd[285:293,], align="c", digits = 2, caption = "Raw Data: Sample Data Rows")
 ```
 
 
 
-|    | steps |   date    | interval |
-|:---|:-----:|:---------:|:--------:|
-|285 |  NA   | 10/1/2012 |   2340   |
-|286 |  NA   | 10/1/2012 |   2345   |
-|287 |  NA   | 10/1/2012 |   2350   |
-|288 |  NA   | 10/1/2012 |   2355   |
-|289 |   0   | 10/2/2012 |    0     |
-|290 |   0   | 10/2/2012 |    5     |
-|291 |   0   | 10/2/2012 |    10    |
-|292 |   0   | 10/2/2012 |    15    |
-|293 |   0   | 10/2/2012 |    20    |
+|    | steps |    date    | interval | rownumber |
+|:---|:-----:|:----------:|:--------:|:---------:|
+|285 |  NA   | 2012-10-01 |  23:40   |    285    |
+|286 |  NA   | 2012-10-01 |  23:45   |    286    |
+|287 |  NA   | 2012-10-01 |  23:50   |    287    |
+|288 |  NA   | 2012-10-01 |  23:55   |    288    |
+|289 |   0   | 2012-10-02 |  00:00   |     1     |
+|290 |   0   | 2012-10-02 |  00:05   |     2     |
+|291 |   0   | 2012-10-02 |  00:10   |     3     |
+|292 |   0   | 2012-10-02 |  00:15   |     4     |
+|293 |   0   | 2012-10-02 |  00:20   |     5     |
 
 After the loading, the *date* and *interval* column are formatted to present days, hours and munutes like YYYY-MM-DD hh:mm and a new column, rownumber (within a day), is assded for proper sorting. Now it liiks like :
 
@@ -87,15 +99,15 @@ knitr::kable(amd[285:293,], align="c", digits = 2, caption = "Formated data: Sam
 
 |    | steps |    date    | interval | rownumber |
 |:---|:-----:|:----------:|:--------:|:---------:|
-|285 |  NA   | 2012-10-01 |  23:40   |    285    |
-|286 |  NA   | 2012-10-01 |  23:45   |    286    |
-|287 |  NA   | 2012-10-01 |  23:50   |    287    |
-|288 |  NA   | 2012-10-01 |  23:55   |    288    |
-|289 |   0   | 2012-10-02 |  00:00   |     1     |
-|290 |   0   | 2012-10-02 |  00:05   |     2     |
-|291 |   0   | 2012-10-02 |  00:10   |     3     |
-|292 |   0   | 2012-10-02 |  00:15   |     4     |
-|293 |   0   | 2012-10-02 |  00:20   |     5     |
+|285 |  NA   | 2012-10-01 |  3::40   |    285    |
+|286 |  NA   | 2012-10-01 |  3::45   |    286    |
+|287 |  NA   | 2012-10-01 |  3::50   |    287    |
+|288 |  NA   | 2012-10-01 |  3::55   |    288    |
+|289 |   0   | 2012-10-02 |  0::00   |     1     |
+|290 |   0   | 2012-10-02 |  0::05   |     2     |
+|291 |   0   | 2012-10-02 |  0::10   |     3     |
+|292 |   0   | 2012-10-02 |  0::15   |     4     |
+|293 |   0   | 2012-10-02 |  0::20   |     5     |
 
 ### II. What is mean total number of steps taken per day? 
 
@@ -113,8 +125,6 @@ names(amdAggrByDay) <- c("date", "total")
 
 ```r
 #format out digital places
-mn <- sprintf("%.1f",mean(amdAggrByDay$total))
-md <- sprintf("%.1f",median(amdAggrByDay$total))
 knitr::kable(amdAggrByDay[1:5,], align="c", digits = 2, caption = "Sample Rows for Totals per Date")
 ```
 
@@ -137,6 +147,13 @@ hist(amdAggrByDay$total, xlab="Total per day ", breaks =  10)
 
 ![plot of chunk unnamed-chunk-5](figure/unnamed-chunk-5-1.png) 
 
+
+```r
+#format out digital places
+mn <- sprintf("%.1f",mean(amdAggrByDay$total))
+md <- sprintf("%.1f",median(amdAggrByDay$total))
+```
+
 3. The mean and median of the total number of steps taken per day are **9354.3** and **10395.0** correspondingly
 
 
@@ -151,17 +168,20 @@ amdAggrByInterval <- aggregate(amd$steps, by=list(Category=amd$interval), FUN=me
 amdAggrByInterval$rownumber <- ave(amdAggrByInterval$Category, FUN = seq_along)
 names(amdAggrByInterval) <- c("time", "mean","interval")
 
-mx <- sprintf("%.1f",max(amdAggrByInterval$mean))
-mi <- which(amdAggrByInterval$mean == mx)
-
 #disable rownum x lables and replace by formatted time - looks much better
 plot(x=amdAggrByInterval$interval,y=amdAggrByInterval$mean,type="l",xlab='Interval, HH:mm', ylab="average", xaxt='n')
 axis(1, at=amdAggrByInterval$interval, labels=c(amdAggrByInterval$time))
 ```
 
-![plot of chunk unnamed-chunk-6](figure/unnamed-chunk-6-1.png) 
+![plot of chunk unnamed-chunk-7](figure/unnamed-chunk-7-1.png) 
 
-2. The th interval, on average across all the days in the dataset, contains the maximum number of steps which is **206.2**
+
+```r
+mx <- max(amdAggrByInterval$mean)
+mi <- which(amdAggrByInterval$mean == mx)
+```
+
+2. The **105** th interval, on average across all the days in the dataset, contains the maximum number of steps which is **140.6**
 
 
 
@@ -172,7 +192,7 @@ admMissCount <- aggregate(amd$steps, by=list(Category=amd$date), FUN=function(x)
 names(admMissCount) <- c("date", "count")
 ```
 
-1. The total no of missing in the dataset is 2302 Data gaps are distributd per days, i.e. there are 61 days totally missed from the experiment, those days are:
+1. The total no of missing entries in the dataset is 2302 Data gaps are distributd per days, i.e. there are 61 days totally missed from the experiment, those days are:
 
 
 ```r
@@ -206,6 +226,11 @@ amdNaReplaced[,1] <-apply(amd, 1, function(x)
                                       as.numeric(x[1]))
 ```
 
+```
+## Warning in `[<-.data.frame`(`*tmp*`, , 1, value = list(1, 2,
+## 20.6289308176101, : provided 17568 variables to replace 1 variables
+```
+
 3. The new dataset, with NA replaced by averame per interval now look like:
 
 
@@ -217,15 +242,15 @@ knitr::kable(amdNaReplaced[285:293,], align="c", digits = 2, caption = "Raw Data
 
 |    | steps |    date    | interval | rownumber |
 |:---|:-----:|:----------:|:--------:|:---------:|
-|285 | 3.30  | 2012-10-01 |  23:40   |    285    |
-|286 | 0.64  | 2012-10-01 |  23:45   |    286    |
-|287 | 0.23  | 2012-10-01 |  23:50   |    287    |
-|288 | 1.08  | 2012-10-01 |  23:55   |    288    |
-|289 | 0.00  | 2012-10-02 |  00:00   |     1     |
-|290 | 0.00  | 2012-10-02 |  00:05   |     2     |
-|291 | 0.00  | 2012-10-02 |  00:10   |     3     |
-|292 | 0.00  | 2012-10-02 |  00:15   |     4     |
-|293 | 0.00  | 2012-10-02 |  00:20   |     5     |
+|285 |   1   | 2012-10-01 |  3::40   |    285    |
+|286 |   1   | 2012-10-01 |  3::45   |    286    |
+|287 |   1   | 2012-10-01 |  3::50   |    287    |
+|288 |   1   | 2012-10-01 |  3::55   |    288    |
+|289 |   1   | 2012-10-02 |  0::00   |     1     |
+|290 |   1   | 2012-10-02 |  0::05   |     2     |
+|291 |   1   | 2012-10-02 |  0::10   |     3     |
+|292 |   1   | 2012-10-02 |  0::15   |     4     |
+|293 |   1   | 2012-10-02 |  0::20   |     5     |
 
 4. The histogram of the total number of steps taken each day (10 breaks): 
 
@@ -233,19 +258,21 @@ knitr::kable(amdNaReplaced[285:293,], align="c", digits = 2, caption = "Raw Data
 ```r
 amdAggrByDayNA <- aggregate(amdNaReplaced$steps, by=list(Category=amdNaReplaced$date), FUN=sum, na.rm=TRUE)
 names(amdAggrByDayNA) <- c("date", "total")
-mnNA <- sprintf("%.1f",mean(amdAggrByDayNA$total))
-mdNA <- sprintf("%.1f",median(amdAggrByDayNA$total))
 hist(amdAggrByDayNA$total, xlab="Total per day ", breaks =  10)
 ```
 
-![plot of chunk unnamed-chunk-11](figure/unnamed-chunk-11-1.png) 
+![plot of chunk unnamed-chunk-13](figure/unnamed-chunk-13-1.png) 
 
-The mean and median of the total number of steps with NA replaced taken per day are 10766.2 and 10766.2 correspondingly. If we compare this histrogram to the one section II we can see that low frequency area at the very beginning at the plot is now gone and the distribution is a bit more normal.
+
+```r
+mnNA <- sprintf("%.1f",mean(amdAggrByDayNA$total))
+mdNA <- sprintf("%.1f",median(amdAggrByDayNA$total))
+```
+
+The mean and median of the total number of steps with NA replaced taken per day are **288.0** and **288.0** correspondingly. If we compare this histrogram to the one in section II we can see that low frequency area at the very beginning at the plot is now gone and the distribution is a bit more normal.
 
 
 ###  V. Weekdays and Weekend Patterns
-
-The plot below the blue line shows the weekend daily pattern and the green one - weekdays.
 
 
 ```r
@@ -261,9 +288,10 @@ xyplot(mean ~ interval | factor(weekday), data=amdAggrByWeekDay,
        xlab="Interva", ylab="Average",layout=c(1,2))
 ```
 
-![plot of chunk unnamed-chunk-12](figure/unnamed-chunk-12-1.png) 
+![plot of chunk unnamed-chunk-15](figure/unnamed-chunk-15-1.png) 
 
-At the choosen sample we can see that the most steps activity starts and finishes later on weeknds and more activities are performed over the weekends, and this is quite understandable . Much easier to compare 2 in 1 plot:
+At the choosen sample we can see that the most steps activity starts and finishes later on weeknds and more activities are performed over the weekends, and this is quite understandable . Much easier to compare 2 in 1 plot, the blue line shows the weekend daily pattern and the green one - weekdays.
+
 
 
 ```r
@@ -273,8 +301,15 @@ yval2 <- amdAggrByWeekDay[amdAggrByWeekDay$weekday=="Weekend",]$mean
 
 plot(x=xval,y=yval1,type="l",col = 'green', xlab='Interval, HH:mm', ylab="average", xaxt='n')
 lines(x=xval,y=yval2,col = 'blue')
+```
+
+![plot of chunk unnamed-chunk-16](figure/unnamed-chunk-16-1.png) 
+
+```r
 axis(1, at=xval, labels=c(amdAggrByInterval$time))
 ```
 
-![plot of chunk unnamed-chunk-13](figure/unnamed-chunk-13-1.png) 
+```
+## Error in axis(1, at = xval, labels = c(amdAggrByInterval$time)): 'at' and 'labels' lengths differ, 288 != 120
+```
 

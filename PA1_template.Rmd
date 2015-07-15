@@ -4,7 +4,7 @@ output: html_document
 ---
 
 *author: "Natalia Udaltsova"*
-*date: "Tuesday, June 23, 2015"*
+*date: "Tuesday, July 14, 2015"*
 
 ## Introduction
 
@@ -85,8 +85,6 @@ names(amdAggrByDay) <- c("date", "total")
 
 ```{r, echo = TRUE}
 #format out digital places
-mn <- sprintf("%.1f",mean(amdAggrByDay$total))
-md <- sprintf("%.1f",median(amdAggrByDay$total))
 knitr::kable(amdAggrByDay[1:5,], align="c", digits = 2, caption = "Sample Rows for Totals per Date")
 
 ```
@@ -96,6 +94,12 @@ knitr::kable(amdAggrByDay[1:5,], align="c", digits = 2, caption = "Sample Rows f
 ```{r, echo = TRUE}
 hist(amdAggrByDay$total, xlab="Total per day ", breaks =  10)
 
+```
+
+```{r, echo = TRUE}
+#format out digital places
+mn <- sprintf("%.1f",mean(amdAggrByDay$total))
+md <- sprintf("%.1f",median(amdAggrByDay$total))
 ```
 
 3. The mean and median of the total number of steps taken per day are **`r mn`** and **`r md`** correspondingly
@@ -111,16 +115,19 @@ amdAggrByInterval <- aggregate(amd$steps, by=list(Category=amd$interval), FUN=me
 amdAggrByInterval$rownumber <- ave(amdAggrByInterval$Category, FUN = seq_along)
 names(amdAggrByInterval) <- c("time", "mean","interval")
 
-mx <- sprintf("%.1f",max(amdAggrByInterval$mean))
-mi <- which(amdAggrByInterval$mean == mx)
-
 #disable rownum x lables and replace by formatted time - looks much better
 plot(x=amdAggrByInterval$interval,y=amdAggrByInterval$mean,type="l",xlab='Interval, HH:mm', ylab="average", xaxt='n')
 axis(1, at=amdAggrByInterval$interval, labels=c(amdAggrByInterval$time))
 
 ```
 
-2. The `r mi`th interval, on average across all the days in the dataset, contains the maximum number of steps which is **`r mx`**
+```{r, echo = TRUE}
+mx <- max(amdAggrByInterval$mean)
+mi <- which(amdAggrByInterval$mean == mx)
+
+```
+
+2. The **`r mi`** th interval, on average across all the days in the dataset, contains the maximum number of steps which is **`r sprintf("%.1f",mx)`**
 
 
 
@@ -132,7 +139,7 @@ names(admMissCount) <- c("date", "count")
 
 ```
 
-1. The total no of missing in the dataset is `r sum(is.na(amd$steps))` Data gaps are distributd per days, i.e. there are `r dim(admMissCount)[1]` days totally missed from the experiment, those days are:
+1. The total no of missing entries in the dataset is `r sum(is.na(amd$steps))` Data gaps are distributd per days, i.e. there are `r dim(admMissCount)[1]` days totally missed from the experiment, those days are:
 
 ```{r, echo = TRUE}
 knitr::kable(admMissCount[admMissCount$count >0,], align="c", digits = 2, caption = "Dates with Missing Steps")
@@ -165,18 +172,20 @@ knitr::kable(amdNaReplaced[285:293,], align="c", digits = 2, caption = "Raw Data
 ```{r, echo = TRUE}
 amdAggrByDayNA <- aggregate(amdNaReplaced$steps, by=list(Category=amdNaReplaced$date), FUN=sum, na.rm=TRUE)
 names(amdAggrByDayNA) <- c("date", "total")
-mnNA <- sprintf("%.1f",mean(amdAggrByDayNA$total))
-mdNA <- sprintf("%.1f",median(amdAggrByDayNA$total))
 hist(amdAggrByDayNA$total, xlab="Total per day ", breaks =  10)
 
 ```
 
-The mean and median of the total number of steps with NA replaced taken per day are `r mnNA` and `r mdNA` correspondingly. If we compare this histrogram to the one section II we can see that low frequency area at the very beginning at the plot is now gone and the distribution is a bit more normal.
+```{r, echo = TRUE}
+mnNA <- sprintf("%.1f",mean(amdAggrByDayNA$total))
+mdNA <- sprintf("%.1f",median(amdAggrByDayNA$total))
+
+```
+
+The mean and median of the total number of steps with NA replaced taken per day are **`r mnNA`** and **`r mdNA`** correspondingly. If we compare this histrogram to the one in section II we can see that low frequency area at the very beginning at the plot is now gone and the distribution is a bit more normal.
 
 
 ###  V. Weekdays and Weekend Patterns
-
-The plot below the blue line shows the weekend daily pattern and the green one - weekdays.
 
 ```{r, echo = TRUE}
 amdNaReplaced$weekend <- (weekdays(amdNaReplaced$date) %in% c('Saturday','Sunday'))
@@ -192,7 +201,8 @@ xyplot(mean ~ interval | factor(weekday), data=amdAggrByWeekDay,
 
 ```
 
-At the choosen sample we can see that the most steps activity starts and finishes later on weeknds and more activities are performed over the weekends, and this is quite understandable . Much easier to compare 2 in 1 plot:
+At the choosen sample we can see that the most steps activity starts and finishes later on weeknds and more activities are performed over the weekends, and this is quite understandable . Much easier to compare 2 in 1 plot, the blue line shows the weekend daily pattern and the green one - weekdays.
+
 
 ```{r, echo = TRUE}
 xval <- amdAggrByWeekDay[amdAggrByWeekDay$weekday=="Weekday",]$interval
